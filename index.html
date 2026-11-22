@@ -8,9 +8,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- html2canvas & jsPDF để xuất hóa đơn dạng Ảnh và PDF -->
+    <!-- html2canvas, jsPDF & QRCodeJS để xuất hóa đơn Ảnh/PDF luôn có mã QR sắc nét -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
@@ -39,7 +40,6 @@
             background-color: #f8fafc;
             -webkit-tap-highlight-color: transparent;
         }
-        /* Custom scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -54,7 +54,6 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
-        /* Print styles for invoice */
         @media print {
             body * {
                 visibility: hidden;
@@ -182,7 +181,6 @@
             <main id="tab-pos" class="tab-content flex-1 flex flex-col lg:flex-row overflow-hidden">
                 <!-- Left: Product Selection -->
                 <div class="flex-1 flex flex-col min-h-0 p-3 sm:p-5 overflow-hidden">
-                    <!-- Search, Category Filter & Active Price Tier Selector -->
                     <div class="flex flex-col gap-2.5 mb-4 shrink-0">
                         <div class="flex flex-col sm:flex-row gap-2.5">
                             <div class="relative flex-1">
@@ -214,25 +212,22 @@
                     </div>
 
                     <!-- Product Grid -->
-                    <div id="pos-product-grid" class="flex-1 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 content-start pr-1">
-                        <!-- Rendered by JS -->
-                    </div>
+                    <div id="pos-product-grid" class="flex-1 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 content-start pr-1"></div>
                 </div>
 
                 <!-- Right: Cart & Customer Checkout -->
                 <div class="w-full lg:w-[420px] xl:w-[450px] bg-white border-t lg:border-t-0 lg:border-l border-slate-200 flex flex-col shrink-0 max-h-[58vh] lg:max-h-full shadow-lg lg:shadow-none">
-                    <!-- Cart Header -->
                     <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
                         <div class="flex items-center gap-2">
                             <i class="fa-solid fa-cart-shopping text-blue-600"></i>
                             <h2 class="font-bold text-sm text-slate-800">Đơn xuất hàng</h2>
                             <span id="cart-count-badge" class="px-2 py-0.5 text-xs font-semibold bg-blue-100 text-blue-700 rounded-full">0</span>
-                            <span id="cart-tier-badge" class="px-2 py-0.5 text-[10px] font-bold bg-indigo-100 text-indigo-700 rounded-md">Giá bán lẻ</span>
+                            <span id="cart-tier-badge" class="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 text-emerald-700 rounded-md">Giá bán lẻ</span>
                         </div>
                         <button onclick="clearCart()" class="text-xs text-rose-600 hover:underline font-medium">Xóa giỏ</button>
                     </div>
 
-                    <!-- Customer Info Section (Auto-detect & Save New) -->
+                    <!-- Customer Info Section -->
                     <div class="p-3.5 border-b border-slate-100 bg-blue-50/30 space-y-2 shrink-0">
                         <div class="flex items-center justify-between">
                             <label class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
@@ -243,7 +238,6 @@
                         <div class="grid grid-cols-2 gap-2">
                             <div class="relative">
                                 <input type="tel" id="pos-cust-phone" oninput="handleCustomerPhoneInput(this.value)" placeholder="Số điện thoại *" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-blue-500">
-                                <!-- Autocomplete dropdown -->
                                 <div id="cust-autocomplete" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-30 max-h-40 overflow-y-auto"></div>
                             </div>
                             <input type="text" id="pos-cust-name" oninput="updateCustomerStatusTag()" placeholder="Tên khách hàng *" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-blue-500">
@@ -252,9 +246,7 @@
                     </div>
 
                     <!-- Cart Items List -->
-                    <div id="pos-cart-items" class="flex-1 overflow-y-auto p-3.5 space-y-2.5">
-                        <!-- Rendered by JS -->
-                    </div>
+                    <div id="pos-cart-items" class="flex-1 overflow-y-auto p-3.5 space-y-2.5"></div>
 
                     <!-- Checkout Footer -->
                     <div class="p-4 border-t border-slate-200 bg-slate-50 space-y-3 shrink-0">
@@ -293,7 +285,6 @@
                         </div>
                     </div>
 
-                    <!-- Mode Switcher -->
                     <div class="bg-white p-1.5 rounded-xl border border-slate-200 inline-flex w-full sm:w-auto">
                         <button type="button" id="btn-mode-existing" onclick="setImportMode('existing')" class="flex-1 sm:flex-initial px-4 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white transition-all">
                             <i class="fa-solid fa-plus-circle mr-1.5"></i> Nhập thêm SP có sẵn
@@ -303,16 +294,11 @@
                         </button>
                     </div>
 
-                    <!-- Import Form Card -->
                     <form id="import-form" onsubmit="handleImportSubmit(event)" class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-2xs space-y-5">
-                        
-                        <!-- Existing Product Selector -->
                         <div id="import-existing-section" class="space-y-4">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Chọn sản phẩm trong kho *</label>
-                                <select id="import-select-product" onchange="fillExistingProductInfo(this.value)" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500">
-                                    <!-- Populated by JS -->
-                                </select>
+                                <select id="import-select-product" onchange="fillExistingProductInfo(this.value)" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500"></select>
                             </div>
                             <div id="existing-product-preview" class="p-3.5 rounded-xl bg-blue-50/60 border border-blue-100 grid grid-cols-2 sm:grid-cols-5 gap-3 text-sm">
                                 <div>
@@ -338,7 +324,6 @@
                             </div>
                         </div>
 
-                        <!-- New Product Fields -->
                         <div id="import-new-section" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 mb-1.5">Mã sản phẩm (SKU) *</label>
@@ -359,7 +344,6 @@
                             </div>
                         </div>
 
-                        <!-- Quantity & 4 Pricing Tiers (Shared) -->
                         <div class="space-y-4 pt-3 border-t border-slate-100">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
@@ -416,7 +400,6 @@
                         </button>
                     </div>
 
-                    <!-- Stats Summary -->
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
                         <div class="bg-white p-4 rounded-2xl border border-slate-200">
                             <span class="text-xs text-slate-500 font-medium">Tổng mã hàng</span>
@@ -436,7 +419,6 @@
                         </div>
                     </div>
 
-                    <!-- Search Bar -->
                     <div class="bg-white p-3 rounded-2xl border border-slate-200 flex flex-col sm:flex-row gap-3">
                         <div class="relative flex-1">
                             <i class="fa-solid fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
@@ -449,7 +431,6 @@
                         </select>
                     </div>
 
-                    <!-- Desktop Table / Mobile Cards -->
                     <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-2xs">
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
@@ -466,9 +447,7 @@
                                         <th class="py-3.5 px-3 text-right">Thao tác</th>
                                     </tr>
                                 </thead>
-                                <tbody id="products-table-body" class="divide-y divide-slate-100 text-sm">
-                                    <!-- Rendered by JS -->
-                                </tbody>
+                                <tbody id="products-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
                             </table>
                         </div>
                     </div>
@@ -489,7 +468,6 @@
                         </div>
                     </div>
 
-                    <!-- Filter -->
                     <div class="bg-white p-3 rounded-2xl border border-slate-200 flex flex-col sm:flex-row gap-3">
                         <div class="relative flex-1">
                             <i class="fa-solid fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
@@ -502,10 +480,7 @@
                         </select>
                     </div>
 
-                    <!-- Orders List Container -->
-                    <div id="orders-list-container" class="space-y-3">
-                        <!-- Rendered by JS -->
-                    </div>
+                    <div id="orders-list-container" class="space-y-3"></div>
                 </div>
             </main>
 
@@ -542,9 +517,7 @@
                                         <th class="py-3.5 px-4 text-right">Thao tác</th>
                                     </tr>
                                 </thead>
-                                <tbody id="customers-table-body" class="divide-y divide-slate-100 text-sm">
-                                    <!-- Rendered by JS -->
-                                </tbody>
+                                <tbody id="customers-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
                             </table>
                         </div>
                     </div>
@@ -556,11 +529,10 @@
                 <div class="max-w-5xl mx-auto space-y-6 pb-8">
                     <div>
                         <h2 class="text-xl font-bold text-slate-900">Cấu hình Cửa hàng, VietQR & Google Sheets</h2>
-                        <p class="text-sm text-slate-500">Thiết lập tài khoản nhận tiền chuyển khoản QR và liên kết cơ sở dữ liệu Google Sheets.</p>
+                        <p class="text-sm text-slate-500">Toàn bộ cấu hình được đồng bộ trực tiếp vào sheet <code class="bg-slate-200/70 px-1.5 py-0.5 rounded font-mono text-xs text-slate-800">CauHinh</code> trên Google Sheets.</p>
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Left 2 Cols: Forms -->
                         <div class="lg:col-span-2 space-y-6">
                             <!-- Bank & Store Config Card -->
                             <div class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-2xs space-y-4">
@@ -568,7 +540,7 @@
                                     <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
                                         <i class="fa-solid fa-building-columns"></i>
                                     </div>
-                                    <h3 class="font-bold text-slate-800">Tài khoản Ngân hàng nhận thanh toán (VietQR)</h3>
+                                    <h3 class="font-bold text-slate-800">Thông tin Shop & Tài khoản nhận tiền (VietQR)</h3>
                                 </div>
 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -578,9 +550,7 @@
                                     </div>
                                     <div>
                                         <label class="block text-xs font-semibold text-slate-700 mb-1.5">Ngân hàng thụ hưởng *</label>
-                                        <select id="cfg-bank-id" onchange="updateLiveQrPreview()" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500">
-                                            <!-- Populated with VN Banks BIN -->
-                                        </select>
+                                        <select id="cfg-bank-id" onchange="updateLiveQrPreview()" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500"></select>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-semibold text-slate-700 mb-1.5">Số tài khoản ngân hàng *</label>
@@ -613,7 +583,7 @@
                                         <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
                                             <i class="fa-solid fa-table"></i>
                                         </div>
-                                        <h3 class="font-bold text-slate-800">Kết nối cơ sở dữ liệu Google Sheets</h3>
+                                        <h3 class="font-bold text-slate-800">Kết nối cơ sở dữ liệu Google Sheets (4 Sheets)</h3>
                                     </div>
                                     <button type="button" onclick="openGasCodeModal()" class="text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg">
                                         <i class="fa-solid fa-code mr-1"></i> Lấy mã Apps Script
@@ -623,18 +593,27 @@
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-700 mb-1.5">Google Apps Script Web App URL</label>
                                     <input type="url" id="cfg-gas-url" placeholder="https://script.google.com/macros/s/AKfycb.../exec" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm font-mono focus:outline-none focus:border-blue-500">
-                                    <p class="text-xs text-slate-500 mt-1.5">Để trống nếu bạn muốn dùng thử ngay bằng bộ nhớ trình duyệt (LocalStorage). Khi dán URL Web App vào, hệ thống sẽ tự động đồng bộ 3 sheet: <code class="bg-slate-100 px-1 rounded">SanPham</code> (9 cột gồm 3 mức giá), <code class="bg-slate-100 px-1 rounded">DonHang</code>, <code class="bg-slate-100 px-1 rounded">KhachHang</code>.</p>
+                                    <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                                        Hệ thống tự động tạo và đồng bộ 4 sheet: 
+                                        <code class="bg-slate-100 px-1 rounded">SanPham</code>, 
+                                        <code class="bg-slate-100 px-1 rounded">DonHang</code>, 
+                                        <code class="bg-slate-100 px-1 rounded">KhachHang</code> và 
+                                        <code class="bg-blue-50 text-blue-700 font-semibold px-1 rounded">CauHinh</code> (lưu thông tin shop, TK ngân hàng, mẫu QR, link Apps Script).
+                                    </p>
                                 </div>
 
                                 <div class="flex flex-wrap gap-2.5 pt-2">
                                     <button type="button" onclick="saveSettings()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-2xs transition-all">
-                                        <i class="fa-solid fa-floppy-disk mr-1.5"></i> Lưu cấu hình
+                                        <i class="fa-solid fa-floppy-disk mr-1.5"></i> Lưu & Đồng bộ Cấu hình
                                     </button>
                                     <button type="button" onclick="syncFromGoogleSheets()" class="px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-sm font-semibold rounded-xl transition-all">
-                                        <i class="fa-solid fa-cloud-arrow-down mr-1.5"></i> Tải dữ liệu từ Sheet về
+                                        <i class="fa-solid fa-cloud-arrow-down mr-1.5"></i> Tải tất cả từ Sheet về
                                     </button>
                                     <button type="button" onclick="pushAllToGoogleSheets()" class="px-4 py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-700 text-sm font-semibold rounded-xl transition-all">
-                                        <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Đẩy dữ liệu hiện tại lên Sheet
+                                        <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Đẩy tất cả lên Sheet
+                                    </button>
+                                    <button type="button" onclick="copyQuickShareConfigLink()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition-all">
+                                        <i class="fa-solid fa-link mr-1.5"></i> Sao chép link mở nhanh
                                     </button>
                                 </div>
                             </div>
@@ -646,7 +625,7 @@
                             <div class="w-full max-w-[260px] bg-slate-50 border border-slate-200 rounded-2xl p-3 flex items-center justify-center min-h-[260px]">
                                 <img id="settings-qr-preview" src="" alt="VietQR Preview" class="w-full h-auto rounded-xl object-contain" onerror="this.src='https://placehold.co/250x250/eff6ff/2563eb?text=Chua+co+thong+tin+TK'">
                             </div>
-                            <p class="text-xs text-slate-500 mt-3">Ví dụ minh họa cho đơn hàng <strong>50.000 ₫</strong> với nội dung <code class="bg-slate-100 px-1 rounded">DH001</code>. Khách hàng có thể mở app ngân hàng quét thử ngay.</p>
+                            <p class="text-xs text-slate-500 mt-3">Ví dụ minh họa cho đơn hàng <strong>50.000 ₫</strong> với nội dung <code class="bg-slate-100 px-1 rounded">DH001</code>.</p>
                         </div>
                     </div>
                 </div>
@@ -682,7 +661,6 @@
     <!-- MODAL 1: INVOICE & DYNAMIC VIETQR PAYMENT MODAL -->
     <div id="invoice-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
         <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto">
-            <!-- Modal Header -->
             <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between no-print">
                 <div class="flex items-center gap-2">
                     <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
@@ -694,7 +672,7 @@
             </div>
 
             <!-- Printable Invoice Body -->
-            <div id="printable-invoice" class="p-5 sm:p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+            <div id="printable-invoice" class="p-5 sm:p-6 space-y-4 max-h-[75vh] overflow-y-auto bg-white">
                 <div class="text-center border-b border-dashed border-slate-300 pb-3">
                     <h4 id="inv-store-name" class="font-bold text-lg text-slate-900 uppercase">SMARTPOS STORE</h4>
                     <p id="inv-store-contact" class="text-xs text-slate-500 mt-0.5"></p>
@@ -748,8 +726,9 @@
                 <!-- Dynamic VietQR Code Section -->
                 <div class="bg-blue-50/70 border border-blue-100 rounded-2xl p-4 flex flex-col items-center text-center">
                     <p class="text-xs font-semibold text-blue-800 mb-2">Quét mã VietQR bằng ứng dụng Ngân hàng để thanh toán</p>
-                    <div class="bg-white p-2.5 rounded-xl shadow-xs border border-slate-200 w-56 h-56 flex items-center justify-center relative">
+                    <div id="inv-qr-box" class="bg-white p-2.5 rounded-xl shadow-xs border border-slate-200 w-56 h-56 flex items-center justify-center relative">
                         <img id="inv-qr-img" src="" alt="Mã QR thanh toán" class="w-full h-full object-contain">
+                        <div id="inv-qr-fallback-canvas" class="hidden w-full h-full flex items-center justify-center"></div>
                     </div>
                     <div class="mt-2.5 text-xs text-slate-600 space-y-0.5">
                         <p>Ngân hàng: <strong id="inv-bank-name" class="text-slate-800"></strong> - STK: <strong id="inv-account-no" class="font-mono text-slate-800"></strong></p>
@@ -759,7 +738,7 @@
                 </div>
             </div>
 
-            <!-- Share & Export Action Bar (Zalo, Facebook, Ảnh, PDF) -->
+            <!-- Share & Export Action Bar -->
             <div class="px-5 py-3 bg-blue-50/60 border-t border-blue-100 space-y-2 no-print">
                 <div class="flex items-center justify-between">
                     <span class="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
@@ -892,21 +871,19 @@
         <div class="bg-white rounded-2xl max-w-3xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
                 <div>
-                    <h3 class="font-bold text-slate-800">Mã nguồn Google Apps Script chuẩn (Tự tạo 3 Sheet)</h3>
-                    <p class="text-xs text-slate-500">Tự động khởi tạo sheet: SanPham, DonHang, KhachHang</p>
+                    <h3 class="font-bold text-slate-800">Mã nguồn Google Apps Script chuẩn (Tự tạo 4 Sheet)</h3>
+                    <p class="text-xs text-slate-500">Tự động khởi tạo: SanPham, DonHang, KhachHang, CauHinh</p>
                 </div>
                 <button onclick="closeModal('gas-code-modal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-5 overflow-y-auto space-y-4 text-xs text-slate-600">
                 <div class="bg-amber-50 border border-amber-200 rounded-xl p-3.5 space-y-1 text-amber-900">
-                    <p class="font-bold">Hướng dẫn cài đặt nhanh (chỉ 1 phút):</p>
+                    <p class="font-bold">Hướng dẫn cập nhật Apps Script (4 Sheets):</p>
                     <ol class="list-decimal list-inside space-y-1">
-                        <li>Tạo một file <strong>Google Sheets</strong> mới trên Google Drive của bạn.</li>
-                        <li>Trên thanh menu, chọn <strong>Tiện ích mở rộng (Extensions)</strong> &rarr; <strong>Apps Script</strong>.</li>
-                        <li>Xóa hết code mặc định và dán toàn bộ đoạn code bên dưới vào, sau đó nhấn <strong>Lưu (Ctrl+S)</strong>.</li>
-                        <li>Nhấn nút <strong>Triển khai (Deploy)</strong> &rarr; <strong>Tùy chọn triển khai mới (New deployment)</strong>.</li>
-                        <li>Chọn loại là <strong>Ứng dụng web (Web app)</strong>. Phần <em>Người có quyền truy cập (Who has access)</em> chọn <strong>Bất kỳ ai (Anyone)</strong> &rarr; Nhấn <strong>Triển khai</strong>.</li>
-                        <li>Copy đường dẫn <strong>URL ứng dụng web</strong> dán vào ô cấu hình trên ứng dụng này!</li>
+                        <li>Mở file <strong>Google Sheets</strong> &rarr; <strong>Tiện ích mở rộng (Extensions)</strong> &rarr; <strong>Apps Script</strong>.</li>
+                        <li>Xóa code cũ và dán toàn bộ đoạn code bên dưới vào, sau đó nhấn <strong>Lưu (Ctrl+S)</strong>.</li>
+                        <li>Nhấn <strong>Triển khai (Deploy)</strong> &rarr; <strong>Quản lý các tệp triển khai</strong> &rarr; biểu tượng cây bút (Chỉnh sửa) &rarr; Phiên bản: <strong>Phiên bản mới</strong> &rarr; <strong>Triển khai</strong> (nếu triển khai mới thì chọn <em>Ứng dụng web</em>, quyền truy cập: <em>Bất kỳ ai</em>).</li>
+                        <li>Dán đường dẫn <strong>URL ứng dụng web</strong> vào ô cấu hình trên ứng dụng này và nhấn <strong>Lưu & Đồng bộ Cấu hình</strong>.</li>
                     </ol>
                 </div>
 
@@ -949,17 +926,17 @@
         ];
 
         // =========================================================================
-        // 2. MÃ NGUỒN GOOGLE APPS SCRIPT CHUẨN (CHO NGƯỜI DÙNG COPY)
+        // 2. MÃ NGUỒN GOOGLE APPS SCRIPT CHUẨN (4 SHEETS: BỔ SUNG SHEET CauHinh)
         // =========================================================================
         const GOOGLE_APPS_SCRIPT_TEMPLATE = `// ============================================================================
-// GOOGLE APPS SCRIPT BACKEND CHO HỆ THỐNG QUẢN LÝ BÁN HÀNG (3 SHEETS)
-// Tự động tạo 3 sheet: SanPham (9 cột gồm 3 mức giá), DonHang, KhachHang
+// GOOGLE APPS SCRIPT BACKEND CHO HỆ THỐNG QUẢN LÝ BÁN HÀNG (4 SHEETS)
+// Tự động tạo 4 sheet: SanPham, DonHang, KhachHang, CauHinh
 // ============================================================================
 
 function setupSheets() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   
-  // 1. Sheet SanPham: MaSP | TenSP | DanhMuc | GiaVon | GiaBanLe | GiaBanSi | GiaKhongCuoc | TonKho | DonVi
+  // 1. Sheet SanPham
   let sheetSP = ss.getSheetByName('SanPham');
   if (!sheetSP) {
     sheetSP = ss.insertSheet('SanPham');
@@ -967,7 +944,7 @@ function setupSheets() {
     sheetSP.getRange('A1:I1').setFontWeight('bold').setBackground('#dbeafe');
   }
 
-  // 2. Sheet DonHang: MaDon | ThoiGian | MaKH | TenKH | SDT | DiaChi | LoaiGia | ChiTietSP | TongTien | TrangThai
+  // 2. Sheet DonHang
   let sheetDH = ss.getSheetByName('DonHang');
   if (!sheetDH) {
     sheetDH = ss.insertSheet('DonHang');
@@ -975,17 +952,25 @@ function setupSheets() {
     sheetDH.getRange('A1:J1').setFontWeight('bold').setBackground('#dcfce7');
   }
 
-  // 3. Sheet KhachHang: MaKH | TenKH | SDT | DiaChi | SoDon | TongChiTieu
+  // 3. Sheet KhachHang
   let sheetKH = ss.getSheetByName('KhachHang');
   if (!sheetKH) {
     sheetKH = ss.insertSheet('KhachHang');
     sheetKH.appendRow(['MaKH', 'TenKH', 'SDT', 'DiaChi', 'SoDon', 'TongChiTieu']);
     sheetKH.getRange('A1:F1').setFontWeight('bold').setBackground('#fef3c7');
   }
+
+  // 4. Sheet CauHinh (Lưu thông tin shop, tài khoản thanh toán, mẫu QR, link Apps Script)
+  let sheetCH = ss.getSheetByName('CauHinh');
+  if (!sheetCH) {
+    sheetCH = ss.insertSheet('CauHinh');
+    sheetCH.appendRow(['TenShop', 'LienHeShop', 'MaNganHang', 'SoTaiKhoan', 'ChuTaiKhoan', 'MauQR', 'LinkAppScript']);
+    sheetCH.getRange('A1:G1').setFontWeight('bold').setBackground('#e0e7ff');
+  }
   return ss;
 }
 
-// Đọc toàn bộ dữ liệu từ 3 sheet (GET Request)
+// Đọc toàn bộ dữ liệu từ 4 sheet (GET Request)
 function doGet(e) {
   const ss = setupSheets();
   
@@ -1001,48 +986,45 @@ function doGet(e) {
     });
   };
 
+  const configRows = getSheetData('CauHinh');
   const result = {
     status: 'success',
     products: getSheetData('SanPham'),
     orders: getSheetData('DonHang'),
-    customers: getSheetData('KhachHang')
+    customers: getSheetData('KhachHang'),
+    settings: configRows.length > 0 ? configRows[0] : null
   };
 
   return ContentService.createTextOutput(JSON.stringify(result))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// Ghi / Đồng bộ dữ liệu lên 3 sheet (POST Request)
+// Ghi / Đồng bộ dữ liệu lên 4 sheet (POST Request)
 function doPost(e) {
   const ss = setupSheets();
   try {
     const payload = JSON.parse(e.postData.contents);
     
-    // Đồng bộ toàn bộ bảng SanPham (9 cột)
+    // 1. Đồng bộ bảng SanPham
     if (payload.products) {
       const sheetSP = ss.getSheetByName('SanPham');
       sheetSP.clearContents();
       sheetSP.appendRow(['MaSP', 'TenSP', 'DanhMuc', 'GiaVon', 'GiaBanLe', 'GiaBanSi', 'GiaKhongCuoc', 'TonKho', 'DonVi']);
+      sheetSP.getRange('A1:I1').setFontWeight('bold').setBackground('#dbeafe');
       payload.products.forEach(p => {
         sheetSP.appendRow([
-          p.id,
-          p.name,
-          p.category,
-          p.cost,
-          p.retailPrice,
-          p.wholesalePrice,
-          p.freeShipPrice,
-          p.stock,
-          p.unit
+          p.id, p.name, p.category, p.cost, p.retailPrice,
+          p.wholesalePrice, p.freeShipPrice, p.stock, p.unit
         ]);
       });
     }
 
-    // Đồng bộ toàn bộ bảng DonHang (kèm LoaiGia)
+    // 2. Đồng bộ bảng DonHang
     if (payload.orders) {
       const sheetDH = ss.getSheetByName('DonHang');
       sheetDH.clearContents();
       sheetDH.appendRow(['MaDon', 'ThoiGian', 'MaKH', 'TenKH', 'SDT', 'DiaChi', 'LoaiGia', 'ChiTietSP', 'TongTien', 'TrangThai']);
+      sheetDH.getRange('A1:J1').setFontWeight('bold').setBackground('#dcfce7');
       payload.orders.forEach(o => {
         sheetDH.appendRow([
           o.id, o.date, o.customerId, o.customerName, o.customerPhone,
@@ -1051,17 +1033,36 @@ function doPost(e) {
       });
     }
 
-    // Đồng bộ toàn bộ bảng KhachHang
+    // 3. Đồng bộ bảng KhachHang
     if (payload.customers) {
       const sheetKH = ss.getSheetByName('KhachHang');
       sheetKH.clearContents();
       sheetKH.appendRow(['MaKH', 'TenKH', 'SDT', 'DiaChi', 'SoDon', 'TongChiTieu']);
+      sheetKH.getRange('A1:F1').setFontWeight('bold').setBackground('#fef3c7');
       payload.customers.forEach(c => {
         sheetKH.appendRow([c.id, c.name, "'" + c.phone, c.address, c.orderCount, c.totalSpent]);
       });
     }
 
-    return ContentService.createTextOutput(JSON.stringify({ status: 'success', message: 'Đã lưu vào Google Sheets' }))
+    // 4. Đồng bộ bảng CauHinh
+    if (payload.settings) {
+      const s = payload.settings;
+      const sheetCH = ss.getSheetByName('CauHinh');
+      sheetCH.clearContents();
+      sheetCH.appendRow(['TenShop', 'LienHeShop', 'MaNganHang', 'SoTaiKhoan', 'ChuTaiKhoan', 'MauQR', 'LinkAppScript']);
+      sheetCH.getRange('A1:G1').setFontWeight('bold').setBackground('#e0e7ff');
+      sheetCH.appendRow([
+        s.storeName || '',
+        s.storeContact || '',
+        "'" + (s.bankId || ''),
+        "'" + (s.accountNo || ''),
+        s.accountName || '',
+        s.qrTemplate || 'compact2',
+        s.gasUrl || ''
+      ]);
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({ status: 'success', message: 'Đã lưu toàn bộ 4 sheet vào Google Sheets' }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.toString() }))
@@ -1070,7 +1071,7 @@ function doPost(e) {
 }`;
 
         // =========================================================================
-        // 3. STATE QUẢN LÝ DỮ LIỆU & DỮ LIỆU MẪU BAN ĐẦU (3 MỨC GIÁ)
+        // 3. STATE QUẢN LÝ DỮ LIỆU & DỮ LIỆU MẪU BAN ĐẦU
         // =========================================================================
         const PRICE_TIERS = {
             retail: { key: 'retail', label: 'Giá bán lẻ', shortLabel: 'Bán lẻ', field: 'retailPrice', badgeClass: 'bg-emerald-100 text-emerald-700' },
@@ -1114,7 +1115,7 @@ function doPost(e) {
         const DEFAULT_SETTINGS = {
             storeName: 'SmartPOS Store',
             storeContact: '0909.888.999 - Việt Nam',
-            bankId: '970422', // MBBank
+            bankId: '970422',
             accountNo: '0909888999',
             accountName: 'NGUYEN VAN A',
             qrTemplate: 'compact2',
@@ -1127,12 +1128,11 @@ function doPost(e) {
             orders: [],
             settings: { ...DEFAULT_SETTINGS },
             cart: [],
-            activePriceTier: 'retail', // 'retail' | 'wholesale' | 'freeship'
+            activePriceTier: 'retail',
             importMode: 'existing',
             activeInvoiceId: null
         };
 
-        // Chuẩn hóa dữ liệu sản phẩm (tương thích ngược nếu dữ liệu cũ chỉ có 1 trường price)
         function normalizeProduct(p) {
             const baseRetail = Number(p.retailPrice ?? p.GiaBanLe ?? p.price ?? p.GiaBan ?? 0);
             const cost = Number(p.cost ?? p.GiaVon ?? p.GiaNhap ?? 0);
@@ -1160,7 +1160,6 @@ function doPost(e) {
         // 4. KHỞI TẠO ỨNG DỤNG & LƯU TRỮ LOCALSTORAGE
         // =========================================================================
         function initApp() {
-            // Load từ localStorage nếu có, không thì nạp dữ liệu mẫu
             const savedProducts = localStorage.getItem('smartpos_products');
             const savedCustomers = localStorage.getItem('smartpos_customers');
             const savedOrders = localStorage.getItem('smartpos_orders');
@@ -1171,6 +1170,14 @@ function doPost(e) {
             appState.customers = savedCustomers ? JSON.parse(savedCustomers) : [...DEFAULT_CUSTOMERS];
             appState.orders = savedOrders ? JSON.parse(savedOrders) : [...DEFAULT_ORDERS];
             appState.settings = savedSettings ? { ...DEFAULT_SETTINGS, ...JSON.parse(savedSettings) } : { ...DEFAULT_SETTINGS };
+
+            // Hỗ trợ mở nhanh từ link chia sẻ có tham số ?gas=URL_APPS_SCRIPT
+            const urlParams = new URLSearchParams(window.location.search);
+            const gasFromUrl = urlParams.get('gas');
+            if (gasFromUrl && gasFromUrl.startsWith('http')) {
+                appState.settings.gasUrl = gasFromUrl.trim();
+                saveToLocalStorage();
+            }
 
             // Populate Bank Select Dropdown
             const bankSelect = document.getElementById('cfg-bank-id');
@@ -1185,7 +1192,7 @@ function doPost(e) {
             loadSettingsToUI();
             refreshAllViews();
 
-            // Nếu đã cấu hình Google Apps Script URL, tự động đồng bộ về khi mở trang
+            // Tự động tải dữ liệu & cấu hình từ Google Sheets khi mở trang
             if (appState.settings.gasUrl && appState.settings.gasUrl.startsWith('http')) {
                 syncFromGoogleSheets(true);
             }
@@ -1209,7 +1216,7 @@ function doPost(e) {
         }
 
         // =========================================================================
-        // 5. ĐỒNG BỘ DỮ LIỆU GOOGLE SHEETS (2 CHIỀU)
+        // 5. ĐỒNG BỘ DỮ LIỆU GOOGLE SHEETS (4 SHEETS GỒM CẢ CauHinh)
         // =========================================================================
         async function syncFromGoogleSheets(silent = false) {
             const url = appState.settings.gasUrl?.trim();
@@ -1218,14 +1225,32 @@ function doPost(e) {
                 return;
             }
 
-            if (!silent) showLoading(true, 'Đang tải dữ liệu từ Google Sheets...');
+            if (!silent) showLoading(true, 'Đang tải dữ liệu & cấu hình từ Google Sheets...');
             try {
                 const response = await fetch(url);
                 const data = await response.json();
                 if (data.status === 'success') {
+                    // 1. Nạp cấu hình từ sheet CauHinh nếu có
+                    if (data.settings) {
+                        const s = data.settings;
+                        if (s.TenShop) appState.settings.storeName = String(s.TenShop);
+                        if (s.LienHeShop !== undefined) appState.settings.storeContact = String(s.LienHeShop);
+                        if (s.MaNganHang) appState.settings.bankId = String(s.MaNganHang).replace(/^'/, '');
+                        if (s.SoTaiKhoan) appState.settings.accountNo = String(s.SoTaiKhoan).replace(/^'/, '');
+                        if (s.ChuTaiKhoan !== undefined) appState.settings.accountName = String(s.ChuTaiKhoan);
+                        if (s.MauQR) appState.settings.qrTemplate = String(s.MauQR);
+                        if (s.LinkAppScript && String(s.LinkAppScript).startsWith('http')) {
+                            appState.settings.gasUrl = String(s.LinkAppScript).trim();
+                        }
+                        loadSettingsToUI();
+                    }
+
+                    // 2. Nạp sản phẩm
                     if (Array.isArray(data.products) && data.products.length > 0) {
                         appState.products = data.products.map(normalizeProduct);
                     }
+
+                    // 3. Nạp khách hàng
                     if (Array.isArray(data.customers)) {
                         appState.customers = data.customers.map(c => ({
                             id: String(c.MaKH || ''),
@@ -1236,6 +1261,8 @@ function doPost(e) {
                             totalSpent: Number(c.TongChiTieu || 0)
                         }));
                     }
+
+                    // 4. Nạp đơn hàng
                     if (Array.isArray(data.orders)) {
                         appState.orders = data.orders.map(o => {
                             let parsedItems = [];
@@ -1254,9 +1281,10 @@ function doPost(e) {
                             };
                         });
                     }
+
                     saveToLocalStorage();
                     refreshAllViews();
-                    if (!silent) showToast('Đồng bộ dữ liệu từ Google Sheets thành công!', 'success');
+                    if (!silent) showToast('Đồng bộ 4 sheet (bao gồm Cấu hình) thành công!', 'success');
                 } else {
                     throw new Error(data.message || 'Lỗi phản hồi từ Google Sheets');
                 }
@@ -1275,9 +1303,8 @@ function doPost(e) {
                 return;
             }
 
-            if (!silent) showLoading(true, 'Đang lưu dữ liệu lên Google Sheets...');
+            if (!silent) showLoading(true, 'Đang lưu dữ liệu & cấu hình lên Google Sheets...');
             try {
-                // Sử dụng mode no-cors hoặc text/plain để tránh preflight CORS của Google Apps Script
                 await fetch(url, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -1285,10 +1312,11 @@ function doPost(e) {
                     body: JSON.stringify({
                         products: appState.products,
                         orders: appState.orders,
-                        customers: appState.customers
+                        customers: appState.customers,
+                        settings: appState.settings
                     })
                 });
-                if (!silent) showToast('Đã gửi dữ liệu đồng bộ lên Google Sheets!', 'success');
+                if (!silent) showToast('Đã lưu dữ liệu & sheet CauHinh lên Google Sheets!', 'success');
             } catch (err) {
                 console.error(err);
                 if (!silent) showToast('Lỗi khi đẩy dữ liệu lên Google Sheets!', 'error');
@@ -1298,7 +1326,7 @@ function doPost(e) {
         }
 
         // =========================================================================
-        // 6. TẠO MÃ VIETQR ĐỘNG CHUẨN NGÂN HÀNG VIỆT NAM
+        // 6. TẠO MÃ VIETQR ĐỘNG & CHUẨN EMVCO NAPAS (KHẮC PHỤC LỖI MẤT QR KHI XUẤT ẢNH)
         // =========================================================================
         function generateVietQrUrl(amount, description) {
             const { bankId, accountNo, accountName, qrTemplate } = appState.settings;
@@ -1307,6 +1335,76 @@ function doPost(e) {
             const encodedInfo = encodeURIComponent(description || 'Thanh toan don hang');
             const encodedName = encodeURIComponent((accountName || '').trim().toUpperCase());
             return `https://img.vietqr.io/image/${bankId}-${cleanAcc}-${qrTemplate || 'compact2'}.png?amount=${Math.round(amount)}&addInfo=${encodedInfo}&accountName=${encodedName}`;
+        }
+
+        // Tạo chuỗi dữ liệu chuẩn EMVCo VietQR (NAPAS) có mã kiểm tra CRC16 để vẽ QR trực tiếp bằng Canvas
+        function buildNapasVietQrPayload(bankBin, accountNo, amount, addInfo) {
+            const tlv = (id, val) => id + String(val.length).padStart(2, '0') + val;
+            const cleanAcc = String(accountNo || '').trim().replace(/\s+/g, '');
+            const cleanBin = String(bankBin || '').trim();
+            const cleanAmount = Math.round(Number(amount || 0));
+            const cleanInfo = String(addInfo || '')
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+                .replace(/[^a-zA-Z0-9 \-_.]/g, '')
+                .slice(0, 50);
+
+            const bankInfo = tlv('00', cleanBin) + tlv('01', cleanAcc);
+            const merchantAccountInfo = tlv('00', 'A000000727') + tlv('01', bankInfo) + tlv('02', 'QRIBFTTA');
+
+            let payload = '';
+            payload += tlv('00', '01'); // Payload Format Indicator
+            payload += tlv('01', cleanAmount > 0 ? '12' : '11'); // Dynamic vs Static
+            payload += tlv('38', merchantAccountInfo); // Consumer Account Information (NAPAS)
+            payload += tlv('53', '704'); // VND
+            if (cleanAmount > 0) {
+                payload += tlv('54', String(cleanAmount));
+            }
+            payload += tlv('58', 'VN');
+            if (cleanInfo) {
+                payload += tlv('62', tlv('08', cleanInfo));
+            }
+            payload += '6304';
+
+            // Tính CRC-16/CCITT-FALSE
+            let crc = 0xFFFF;
+            for (let i = 0; i < payload.length; i++) {
+                crc ^= (payload.charCodeAt(i) << 8);
+                for (let j = 0; j < 8; j++) {
+                    crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) : (crc << 1);
+                    crc &= 0xFFFF;
+                }
+            }
+            return payload + crc.toString(16).toUpperCase().padStart(4, '0');
+        }
+
+        function generateLocalQrDataUrl(amount, description) {
+            const { bankId, accountNo } = appState.settings;
+            if (!bankId || !accountNo || typeof QRCode === 'undefined') return null;
+
+            const qrText = buildNapasVietQrPayload(bankId, accountNo, amount, description);
+            const tempDiv = document.createElement('div');
+            tempDiv.style.position = 'fixed';
+            tempDiv.style.left = '-9999px';
+            document.body.appendChild(tempDiv);
+
+            try {
+                new QRCode(tempDiv, {
+                    text: qrText,
+                    width: 240,
+                    height: 240,
+                    colorDark: '#0f172a',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+                const canvas = tempDiv.querySelector('canvas');
+                const dataUrl = canvas ? canvas.toDataURL('image/png') : null;
+                document.body.removeChild(tempDiv);
+                return dataUrl;
+            } catch (e) {
+                document.body.removeChild(tempDiv);
+                return null;
+            }
         }
 
         function updateLiveQrPreview() {
@@ -1330,7 +1428,6 @@ function doPost(e) {
             if (!PRICE_TIERS[tierKey]) return;
             appState.activePriceTier = tierKey;
 
-            // Cập nhật giao diện 3 nút chọn bảng giá
             ['retail', 'wholesale', 'freeship'].forEach(key => {
                 const btn = document.getElementById(`tier-btn-${key}`);
                 if (!btn) return;
@@ -1341,14 +1438,12 @@ function doPost(e) {
                 }
             });
 
-            // Cập nhật badge trên header giỏ hàng
             const cartBadge = document.getElementById('cart-tier-badge');
             if (cartBadge) {
                 cartBadge.textContent = PRICE_TIERS[tierKey].label;
                 cartBadge.className = `px-2 py-0.5 text-[10px] font-bold rounded-md ${PRICE_TIERS[tierKey].badgeClass}`;
             }
 
-            // Tự động cập nhật đơn giá toàn bộ sản phẩm đang có trong giỏ hàng theo bảng giá mới
             appState.cart.forEach(item => {
                 const prod = appState.products.find(p => p.id === item.id);
                 if (prod) {
@@ -1527,7 +1622,6 @@ function doPost(e) {
             `).join('');
         }
 
-        // Tìm kiếm & nhận diện khách hàng cũ / mới tự động
         function handleCustomerPhoneInput(phoneVal) {
             const cleanPhone = phoneVal.trim();
             const dropdown = document.getElementById('cust-autocomplete');
@@ -1551,7 +1645,6 @@ function doPost(e) {
                 dropdown.classList.add('hidden');
             }
 
-            // Nếu khớp chính xác SĐT, tự điền luôn
             const exact = appState.customers.find(c => c.phone === cleanPhone);
             if (exact) {
                 document.getElementById('pos-cust-name').value = exact.name;
@@ -1591,7 +1684,6 @@ function doPost(e) {
             }
         }
 
-        // Xử lý tạo đơn xuất hàng, trừ tồn kho, lưu khách mới & hiện QR thanh toán
         function processCheckout() {
             if (appState.cart.length === 0) {
                 showToast('Vui lòng chọn ít nhất 1 sản phẩm vào giỏ hàng!', 'warning');
@@ -1605,20 +1697,17 @@ function doPost(e) {
 
             const totalAmount = appState.cart.reduce((sum, item) => sum + item.qty * item.price, 0);
 
-            // 1. Xử lý Khách hàng (Tự động lưu nếu là khách hàng mới)
             let customerRecord = null;
             if (phone || name) {
                 if (!name) name = 'Khách hàng ' + phone;
                 customerRecord = appState.customers.find(c => (phone && c.phone === phone));
 
                 if (customerRecord) {
-                    // Cập nhật khách cũ
                     customerRecord.name = name;
                     if (address) customerRecord.address = address;
                     customerRecord.orderCount = (customerRecord.orderCount || 0) + 1;
                     customerRecord.totalSpent = (customerRecord.totalSpent || 0) + totalAmount;
                 } else {
-                    // Thêm khách hàng mới vào danh sách/sheet KhachHang
                     const newCustId = 'KH' + String(appState.customers.length + 1).padStart(3, '0');
                     customerRecord = {
                         id: newCustId,
@@ -1640,7 +1729,6 @@ function doPost(e) {
                 };
             }
 
-            // 2. Trừ tồn kho sản phẩm
             appState.cart.forEach(cartItem => {
                 const prod = appState.products.find(p => p.id === cartItem.id);
                 if (prod) {
@@ -1648,7 +1736,6 @@ function doPost(e) {
                 }
             });
 
-            // 3. Tạo đơn hàng mới
             const now = new Date();
             const orderId = 'DH' + now.getFullYear().toString().slice(-2) +
                 String(now.getMonth() + 1).padStart(2, '0') +
@@ -1657,7 +1744,6 @@ function doPost(e) {
 
             const dateStr = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-            // Xác định nhãn bảng giá của đơn hàng (nếu có trộn nhiều loại giá trên từng dòng thì ghi chú rõ)
             const uniqueTiers = [...new Set(appState.cart.map(i => i.priceTier))];
             const orderTierLabel = uniqueTiers.length === 1
                 ? PRICE_TIERS[uniqueTiers[0]].label
@@ -1686,13 +1772,11 @@ function doPost(e) {
 
             appState.orders.unshift(newOrder);
 
-            // 4. Lưu vào LocalStorage & Đồng bộ lên Google Sheets nếu có
             saveToLocalStorage();
             if (appState.settings.gasUrl) {
                 pushAllToGoogleSheets(true);
             }
 
-            // 5. Reset giỏ hàng & form khách
             appState.cart = [];
             document.getElementById('pos-cust-phone').value = '';
             document.getElementById('pos-cust-name').value = '';
@@ -1702,7 +1786,6 @@ function doPost(e) {
             refreshAllViews();
             showToast(`Đã tạo đơn hàng ${orderId} thành công!`, 'success');
 
-            // 6. Hiển thị hóa đơn & mã QR thanh toán
             openInvoiceModal(orderId);
         }
 
@@ -1768,7 +1851,6 @@ function doPost(e) {
                 showToast('Vui lòng nhập Giá vốn trước để gợi ý 3 mức giá!', 'warning');
                 return;
             }
-            // Gợi ý làm tròn nghìn: Lẻ (+45%), Sỉ (+20%), Không cước VC (+32%)
             document.getElementById('import-retail-price').value = Math.round((cost * 1.45) / 1000) * 1000;
             document.getElementById('import-wholesale-price').value = Math.round((cost * 1.20) / 1000) * 1000;
             document.getElementById('import-freeship-price').value = Math.round((cost * 1.32) / 1000) * 1000;
@@ -1856,7 +1938,6 @@ function doPost(e) {
             const stockFilter = document.getElementById('prod-stock-filter').value;
             const tbody = document.getElementById('products-table-body');
 
-            // Update stats
             document.getElementById('stat-total-sku').textContent = appState.products.length;
             document.getElementById('stat-total-stock').textContent = appState.products.reduce((s, p) => s + p.stock, 0);
             document.getElementById('stat-inventory-value').textContent = formatCurrency(appState.products.reduce((s, p) => s + (p.stock * p.cost), 0));
@@ -1962,7 +2043,6 @@ function doPost(e) {
             showToast('Đã xóa sản phẩm khỏi danh sách.', 'info');
         }
 
-        // Lịch sử đơn hàng
         function renderOrdersList() {
             const keyword = document.getElementById('order-search').value.toLowerCase().trim();
             const statusFilter = document.getElementById('order-status-filter').value;
@@ -2019,7 +2099,6 @@ function doPost(e) {
             }).join('');
         }
 
-        // Mở Popup Hóa đơn & Sinh mã VietQR động cho đơn hàng
         function openInvoiceModal(orderId) {
             const order = appState.orders.find(o => o.id === orderId);
             if (!order) return;
@@ -2051,18 +2130,17 @@ function doPost(e) {
 
             document.getElementById('inv-total-amount').textContent = formatCurrency(order.total);
 
-            // Sinh mã VietQR động theo đúng số tiền và mã đơn hàng
             const transferContent = `Thanh toan ${order.id}`;
             const qrUrl = generateVietQrUrl(order.total, transferContent);
             const qrImg = document.getElementById('inv-qr-img');
             
-            // Xóa thuộc tính crossOrigin để tránh trình duyệt chặn hiển thị ảnh từ img.vietqr.io
             qrImg.removeAttribute('crossorigin');
             qrImg.onerror = function() {
                 this.onerror = null;
-                this.src = 'https://placehold.co/240x240/eff6ff/2563eb?text=Kiem+tra+STK+Ngan+Hang';
+                const localQr = generateLocalQrDataUrl(order.total, transferContent);
+                this.src = localQr || 'https://placehold.co/240x240/eff6ff/2563eb?text=Kiem+tra+STK+Ngan+Hang';
             };
-            qrImg.src = qrUrl || 'https://placehold.co/240x240/eff6ff/2563eb?text=Chua+cau+hinh+TK+Ngan+Hang';
+            qrImg.src = qrUrl || generateLocalQrDataUrl(order.total, transferContent) || 'https://placehold.co/240x240/eff6ff/2563eb?text=Chua+cau+hinh+TK+Ngan+Hang';
 
             document.getElementById('inv-bank-name').textContent = bankObj ? bankObj.code : bankId;
             document.getElementById('inv-account-no').textContent = accountNo || 'Chưa thiết lập';
@@ -2080,23 +2158,56 @@ function doPost(e) {
         }
 
         // =========================================================================
-        // CHỤP ẢNH & XUẤT PDF HÓA ĐƠN ĐỂ CHIA SẺ QUA ZALO, FACEBOOK, MESSENGER...
+        // CHỤP ẢNH & XUẤT PDF HÓA ĐƠN (ĐẢM BẢO LUÔN HIỂN THỊ MÃ QR)
         // =========================================================================
         async function convertImageToDataUrlSafe(imgEl) {
-            if (!imgEl || !imgEl.src || imgEl.src.startsWith('data:')) return null;
+            if (!imgEl || !imgEl.src) return null;
+            if (imgEl.src.startsWith('data:')) return imgEl.src;
+
+            // Thử 1: Fetch blob trực tiếp nếu server hỗ trợ CORS
             try {
-                const resp = await fetch(imgEl.src, { mode: 'cors' });
-                if (!resp.ok) return null;
-                const blob = await resp.blob();
-                return await new Promise(resolve => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => resolve(reader.result);
-                    reader.onerror = () => resolve(null);
-                    reader.readAsDataURL(blob);
+                const resp = await fetch(imgEl.src, { mode: 'cors', cache: 'no-store' });
+                if (resp.ok) {
+                    const blob = await resp.blob();
+                    const dataUrl = await new Promise(resolve => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.onerror = () => resolve(null);
+                        reader.readAsDataURL(blob);
+                    });
+                    if (dataUrl) return dataUrl;
+                }
+            } catch (e) {}
+
+            // Thử 2: Vẽ lại qua thẻ Image mới bật crossOrigin="anonymous"
+            try {
+                const crossDataUrl = await new Promise(resolve => {
+                    const tempImg = new Image();
+                    tempImg.crossOrigin = 'anonymous';
+                    tempImg.onload = () => {
+                        try {
+                            const c = document.createElement('canvas');
+                            c.width = tempImg.naturalWidth || 240;
+                            c.height = tempImg.naturalHeight || 240;
+                            c.getContext('2d').drawImage(tempImg, 0, 0);
+                            resolve(c.toDataURL('image/png'));
+                        } catch (err) {
+                            resolve(null);
+                        }
+                    };
+                    tempImg.onerror = () => resolve(null);
+                    const sep = imgEl.src.includes('?') ? '&' : '?';
+                    tempImg.src = imgEl.src + sep + '_cb=' + Date.now();
                 });
-            } catch (e) {
-                return null;
+                if (crossDataUrl) return crossDataUrl;
+            } catch (e) {}
+
+            // Thử 3 (Dự phòng tuyệt đối): Sinh mã QR EMVCo NAPAS cục bộ bằng Canvas -> không bao giờ mất QR
+            const order = appState.orders.find(o => o.id === appState.activeInvoiceId);
+            if (order) {
+                return generateLocalQrDataUrl(order.total, `Thanh toan ${order.id}`);
             }
+            return null;
         }
 
         async function captureInvoiceCanvas() {
@@ -2105,25 +2216,29 @@ function doPost(e) {
                 throw new Error('Không thể khởi tạo trình chụp hóa đơn');
             }
 
-            // Tạm thời mở rộng toàn bộ chiều cao nội dung hóa đơn để chụp không bị cắt bởi thanh cuộn
             const prevMaxHeight = invoiceEl.style.maxHeight;
             const prevOverflow = invoiceEl.style.overflow;
             invoiceEl.style.maxHeight = 'none';
             invoiceEl.style.overflow = 'visible';
 
-            // Chuyển ảnh QR sang base64 DataURL tạm thời để html2canvas vẽ được mã QR sắc nét mà không bị lỗi CORS
             const qrImg = document.getElementById('inv-qr-img');
             const originalQrSrc = qrImg ? qrImg.src : '';
             const safeDataUrl = await convertImageToDataUrlSafe(qrImg);
+
             if (qrImg && safeDataUrl) {
-                qrImg.src = safeDataUrl;
+                await new Promise(resolve => {
+                    qrImg.onload = resolve;
+                    qrImg.onerror = resolve;
+                    qrImg.src = safeDataUrl;
+                    if (qrImg.complete) resolve();
+                });
             }
 
             try {
                 const canvas = await html2canvas(invoiceEl, {
                     scale: 2,
                     useCORS: true,
-                    allowTaint: true,
+                    allowTaint: false,
                     backgroundColor: '#ffffff',
                     logging: false
                 });
@@ -2137,10 +2252,9 @@ function doPost(e) {
             }
         }
 
-        // Chia sẻ trực tiếp file Ảnh hóa đơn qua Web Share API (Zalo, Facebook, Messenger...)
         async function shareInvoiceAsImage() {
             const orderId = appState.activeInvoiceId || 'HoaDon';
-            showLoading(true, 'Đang tạo ảnh hóa đơn để chia sẻ...');
+            showLoading(true, 'Đang tạo ảnh hóa đơn kèm mã QR...');
             try {
                 const canvas = await captureInvoiceCanvas();
                 const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png', 0.95));
@@ -2156,7 +2270,6 @@ function doPost(e) {
                     });
                     showToast('Đã mở bảng chia sẻ hóa đơn!', 'success');
                 } else {
-                    // Fallback trên trình duyệt máy tính không hỗ trợ share file trực tiếp: tự động tải ảnh + thông báo
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
@@ -2166,7 +2279,7 @@ function doPost(e) {
                     document.body.removeChild(a);
                     URL.revokeObjectURL(url);
                     showLoading(false);
-                    showToast('Đã tải ảnh hóa đơn! Bạn có thể kéo thả hoặc gửi ngay vào Zalo / Facebook.', 'info');
+                    showToast('Đã tải ảnh hóa đơn có mã QR! Sẵn sàng gửi vào Zalo / Facebook.', 'info');
                 }
             } catch (err) {
                 showLoading(false);
@@ -2177,10 +2290,9 @@ function doPost(e) {
             }
         }
 
-        // Tải nhanh file Ảnh PNG về máy
         async function downloadInvoiceImage() {
             const orderId = appState.activeInvoiceId || 'HoaDon';
-            showLoading(true, 'Đang xuất ảnh hóa đơn PNG...');
+            showLoading(true, 'Đang xuất ảnh hóa đơn PNG kèm mã QR...');
             try {
                 const canvas = await captureInvoiceCanvas();
                 const dataUrl = canvas.toDataURL('image/png');
@@ -2190,7 +2302,7 @@ function doPost(e) {
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
-                showToast(`Đã tải xuống ảnh HoaDon_${orderId}.png`, 'success');
+                showToast(`Đã tải xuống ảnh HoaDon_${orderId}.png (đầy đủ mã QR)`, 'success');
             } catch (err) {
                 console.error(err);
                 showToast('Lỗi khi xuất ảnh hóa đơn!', 'error');
@@ -2199,17 +2311,15 @@ function doPost(e) {
             }
         }
 
-        // Xuất file PDF sắc nét & mở chia sẻ qua Zalo / Facebook hoặc tải về máy
         async function exportOrShareInvoicePDF() {
             const orderId = appState.activeInvoiceId || 'HoaDon';
-            showLoading(true, 'Đang tạo tệp PDF hóa đơn...');
+            showLoading(true, 'Đang tạo tệp PDF hóa đơn kèm mã QR...');
             try {
                 const canvas = await captureInvoiceCanvas();
                 const imgData = canvas.toDataURL('image/png');
                 const { jsPDF } = window.jspdf;
 
-                // Tính kích thước trang PDF vừa khít tỉ lệ hóa đơn (khổ 80mm hoặc A5 tùy chiều cao)
-                const pdfWidth = 105; // mm (tương đương khổ A6/hóa đơn gọn đẹp trên điện thoại)
+                const pdfWidth = 105;
                 const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
                 const pdf = new jsPDF({
@@ -2258,7 +2368,6 @@ function doPost(e) {
             }
         }
 
-        // Quản lý Khách hàng
         function renderCustomersList() {
             const keyword = document.getElementById('cust-search').value.toLowerCase().trim();
             const tbody = document.getElementById('customers-table-body');
@@ -2368,7 +2477,7 @@ function doPost(e) {
             updateLiveQrPreview();
         }
 
-        function saveSettings() {
+        async function saveSettings() {
             appState.settings = {
                 storeName: document.getElementById('cfg-store-name').value.trim() || 'SmartPOS Store',
                 storeContact: document.getElementById('cfg-store-contact').value.trim(),
@@ -2381,11 +2490,29 @@ function doPost(e) {
 
             saveToLocalStorage();
             loadSettingsToUI();
-            showToast('Đã lưu cấu hình cửa hàng & tài khoản ngân hàng!', 'success');
 
             if (appState.settings.gasUrl) {
-                syncFromGoogleSheets();
+                await pushAllToGoogleSheets(false);
+            } else {
+                showToast('Đã lưu cấu hình vào trình duyệt!', 'success');
             }
+        }
+
+        function copyQuickShareConfigLink() {
+            const gasUrl = document.getElementById('cfg-gas-url').value.trim();
+            if (!gasUrl) {
+                showToast('Vui lòng nhập Google Apps Script URL trước khi tạo link mở nhanh!', 'warning');
+                return;
+            }
+            const baseUrl = window.location.href.split('?')[0];
+            const shareUrl = `${baseUrl}?gas=${encodeURIComponent(gasUrl)}`;
+            const textarea = document.createElement('textarea');
+            textarea.value = shareUrl;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast('Đã sao chép link mở nhanh (tự nạp cấu hình từ Sheet CauHinh)!', 'success');
         }
 
         function updateConnectionBadges() {
@@ -2411,7 +2538,6 @@ function doPost(e) {
             const target = document.getElementById(`tab-${tabName}`);
             if (target) target.classList.remove('hidden');
 
-            // Update Desktop Nav
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 if (btn.dataset.tab === tabName) {
                     btn.className = 'nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all bg-blue-50 text-blue-700';
@@ -2420,7 +2546,6 @@ function doPost(e) {
                 }
             });
 
-            // Update Mobile Bottom Nav
             document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
                 if (btn.dataset.tab === tabName) {
                     btn.className = 'mobile-nav-btn flex flex-col items-center justify-center flex-1 py-1 text-blue-600';
@@ -2454,7 +2579,7 @@ function doPost(e) {
             textarea.select();
             document.execCommand('copy');
             document.body.removeChild(textarea);
-            showToast('Đã sao chép mã Google Apps Script vào bộ nhớ tạm!', 'success');
+            showToast('Đã sao chép mã Google Apps Script (4 Sheets) vào bộ nhớ tạm!', 'success');
         }
 
         function showLoading(show, text = 'Đang xử lý...') {
@@ -2506,7 +2631,6 @@ function doPost(e) {
             return num + 'đ';
         }
 
-        // Start App
         window.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
